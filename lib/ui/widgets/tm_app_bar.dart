@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:task_manager_1/ui/screens/update_profile_screen.dart';
 
 import '../utils/app_colors.dart';
 
 class TMAppBar extends StatelessWidget implements PreferredSizeWidget{
-  const TMAppBar({super.key,});
+  const TMAppBar({super.key,this.fromUpdateProfile=false});
 
+  final bool fromUpdateProfile;
 
 
   @override
@@ -19,22 +21,30 @@ class TMAppBar extends StatelessWidget implements PreferredSizeWidget{
           ),
           const SizedBox(width: 8,),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Rabbil Hasan',
-                  style: textTheme.titleSmall?.copyWith(
-                    color: Colors.white,
+            child: GestureDetector(
+              onTap: () {
+                if(!fromUpdateProfile){
+                  Navigator.pushNamed(context, UpdateProfileScreen.name);         //Can't click update screen appbar because already there
+                }
+
+              },
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Rabbil Hasan',
+                    style: textTheme.titleSmall?.copyWith(
+                      color: Colors.white,
+                    ),
                   ),
-                ),
-                Text(
-                  'rabbial@gmail.com',
-                  style: textTheme.bodySmall?.copyWith(
-                    color: Colors.white,
+                  Text(
+                    'rabbial@gmail.com',
+                    style: textTheme.bodySmall?.copyWith(
+                      color: Colors.white,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           IconButton(onPressed: () {}, icon: Icon(Icons.logout)),
