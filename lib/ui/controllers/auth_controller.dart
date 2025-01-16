@@ -4,16 +4,19 @@ import 'package:task_manager_1/data/models/user_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 class AuthController
 {
-  static const String? accessToken;
-  static const UserModel? userModel;
+  static String? accessToken;
+  static UserModel? userModel;
 
   static String _accessTokenKey='access-token';
   static String _userDataKey='user-data';
 
-  static Future<void> saveUserData(String accessToken,UserModel model) async {
+  static Future<void> saveUserData(String token,UserModel model) async {
     SharedPreferences sharedPreferences=await SharedPreferences.getInstance();
-    await sharedPreferences.setString(_accessTokenKey, accessToken);
+    await sharedPreferences.setString(_accessTokenKey, token);
     await sharedPreferences.setString(_userDataKey, jsonEncode(model.toJson()));
+
+    accessToken=token;
+    userModel=model;
   }
 
   static Future<void> getUserData() async{
