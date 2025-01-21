@@ -1,8 +1,12 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:task_manager_1/data/services/network_caller.dart';
+import 'package:task_manager_1/data/utils/urls.dart';
 import 'package:task_manager_1/ui/screens/sign_in_screen.dart';
 import 'package:task_manager_1/ui/screens/sign_up_screen.dart';
+import 'package:task_manager_1/ui/widgets/centered_circular_progress_indicator.dart';
 import 'package:task_manager_1/ui/widgets/screen_background.dart';
+import 'package:task_manager_1/ui/widgets/snack_bar_message.dart';
 
 import '../utils/app_colors.dart';
 import 'forgot_password_verify_otp_screen.dart';
@@ -20,6 +24,9 @@ class _ForgotPasswordVerifyEmailScreen extends State<ForgotPasswordVerifyEmailSc
 
   final TextEditingController _emailTEController=TextEditingController();
   final GlobalKey<FormState> _formKey=GlobalKey<FormState>();
+
+  bool _verifyEmailInProgress=false;
+
   @override
   Widget build(BuildContext context) {
     final textTheme=Theme.of(context).textTheme;
@@ -50,13 +57,21 @@ class _ForgotPasswordVerifyEmailScreen extends State<ForgotPasswordVerifyEmailSc
                     decoration: InputDecoration(
                       hintText: 'Email',
                     ),
+                    validator: (String? value){
+                      if(value?.trim().isEmpty ?? true){
+                        return 'Enter your email';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 28,),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.pushNamed(context, ForgotPasswordVerifyOtpScreen.name);
-                    },
-                    child: Icon(Icons.arrow_circle_right_outlined),
+                  Visibility(
+                    visible: _verifyEmailInProgress==false,
+                    replacement: CenteredCircularProgressIndicator(),
+                    child: ElevatedButton(
+                      onPressed: _onTapVerifyEmailButton,
+                      child: Icon(Icons.arrow_circle_right_outlined),
+                    ),
                   ),
                   const SizedBox(height: 48,),
                   Center(
@@ -92,6 +107,28 @@ class _ForgotPasswordVerifyEmailScreen extends State<ForgotPasswordVerifyEmailSc
           ]
       ),
     );
+  }
+
+  void _onTapVerifyEmailButton(){
+    if(_formKey.currentState!.validate()){
+      _getRessetPasswordVerifyEmail();
+    }
+  }
+
+  Future<void> _getRessetPasswordVerifyEmail() async{
+    _verifyEmailInProgress=true;
+    setState(() {});
+
+    final NetworkResponse response=await NetworkCaller.getRequest(url: Urls.verifyEmailUrl(_emailTEController.text.trim()));
+    String mail=_emailTEController.text.trim();
+    if(response.isSuccess){
+      Navigator.pushNamed(context, ForgotPasswordVerifyOtpScreen.name,arguments: mail.toString());
+    }
+    else{
+      showSnackBarMessage(context, response.errorMessage);
+    }
+    _verifyEmailInProgress=false;
+    setState(() {});
   }
 
   @override

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:task_manager_1/ui/screens/update_profile_screen.dart';
 import 'package:task_manager_1/ui/controllers/auth_controller.dart';
@@ -21,6 +23,8 @@ class TMAppBar extends StatelessWidget implements PreferredSizeWidget{
         children: [
           CircleAvatar(
             radius: 16,
+            backgroundImage: MemoryImage(base64Decode(AuthController.userModel?.photo ?? '')),
+            onBackgroundImageError: (_,__) => const Icon(Icons.percent_outlined),
           ),
           const SizedBox(width: 8,),
           Expanded(

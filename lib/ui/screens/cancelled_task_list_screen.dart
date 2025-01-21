@@ -11,23 +11,23 @@ import '../widgets/task_item_widget.dart';
 import '../widgets/task_status_summay_widget.dart';
 import '../widgets/tm_app_bar.dart';
 
-class ProgressTaskListScreen extends StatefulWidget {
-  const ProgressTaskListScreen({super.key});
+class CancelledTaskListScreen extends StatefulWidget {
+  const CancelledTaskListScreen({super.key});
 
   @override
-  State<ProgressTaskListScreen> createState() => _ProgressTaskListScreenState();
+  State<CancelledTaskListScreen> createState() => _CancelledTaskListScreenState();
 }
 
-class _ProgressTaskListScreenState extends State<ProgressTaskListScreen> {
+class _CancelledTaskListScreenState extends State<CancelledTaskListScreen> {
 
-  bool _getProgressTaskListInProgress=false;
-  TaskListByStatusModel? progressTaskListModel;
+  bool _getCancelledTaskListInProgress=false;
+  TaskListByStatusModel? cancelledTaskListModel;
 
   @override
   @override
   void initState() {
     super.initState();
-    _getProgressTask();
+    _getCancelledTask();
   }
 
   @override
@@ -39,7 +39,7 @@ class _ProgressTaskListScreenState extends State<ProgressTaskListScreen> {
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 8),
             child: Visibility(
-              visible: _getProgressTaskListInProgress==false,
+              visible: _getCancelledTaskListInProgress==false,
               replacement: CenteredCircularProgressIndicator(),
               child: _buildTaskListView()
             ),
@@ -53,28 +53,28 @@ class _ProgressTaskListScreenState extends State<ProgressTaskListScreen> {
     return ListView.builder(
       shrinkWrap: true,
       primary: false,
-      itemCount: progressTaskListModel?.taskList?.length ?? 0,
+      itemCount: cancelledTaskListModel?.taskList?.length ?? 0,
       itemBuilder: (context,indexx) {
         return TaskItemWidget(
-          taskModel: progressTaskListModel!.taskList![indexx],
-          status: 'Progress',
-          color: Colors.yellow,
+          taskModel: cancelledTaskListModel!.taskList![indexx],
+          status: 'Cancelled',
+          color: Colors.red,
         );
       },
     );
   }
 
-  Future<void> _getProgressTask() async{
-    _getProgressTaskListInProgress=true;
+  Future<void> _getCancelledTask() async{
+    _getCancelledTaskListInProgress=true;
     setState(() {});
-    final NetworkResponse response=await NetworkCaller.getRequest(url: Urls.taskListByStatusUrl('Progress'));
+    final NetworkResponse response=await NetworkCaller.getRequest(url: Urls.taskListByStatusUrl('Cancelled'));
     if(response.isSuccess){
-      progressTaskListModel=TaskListByStatusModel.fromJson(response.responseData!);
+      cancelledTaskListModel=TaskListByStatusModel.fromJson(response.responseData!);
     }
     else{
       showSnackBarMessage(context, response.errorMessage);
     }
-    _getProgressTaskListInProgress=false;
+    _getCancelledTaskListInProgress=false;
     setState(() {});
     
 

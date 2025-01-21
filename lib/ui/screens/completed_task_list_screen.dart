@@ -11,23 +11,23 @@ import '../widgets/task_item_widget.dart';
 import '../widgets/task_status_summay_widget.dart';
 import '../widgets/tm_app_bar.dart';
 
-class ProgressTaskListScreen extends StatefulWidget {
-  const ProgressTaskListScreen({super.key});
+class CompletedTaskListScreen extends StatefulWidget {
+  const CompletedTaskListScreen({super.key});
 
   @override
-  State<ProgressTaskListScreen> createState() => _ProgressTaskListScreenState();
+  State<CompletedTaskListScreen> createState() => _CompletedTaskListScreenState();
 }
 
-class _ProgressTaskListScreenState extends State<ProgressTaskListScreen> {
+class _CompletedTaskListScreenState extends State<CompletedTaskListScreen> {
 
-  bool _getProgressTaskListInProgress=false;
-  TaskListByStatusModel? progressTaskListModel;
+  bool _getCompletedTaskListInProgress=false;
+  TaskListByStatusModel? completedTaskListModel;
 
   @override
   @override
   void initState() {
     super.initState();
-    _getProgressTask();
+    _getCompletedTask();
   }
 
   @override
@@ -39,7 +39,7 @@ class _ProgressTaskListScreenState extends State<ProgressTaskListScreen> {
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 8),
             child: Visibility(
-              visible: _getProgressTaskListInProgress==false,
+              visible: _getCompletedTaskListInProgress==false,
               replacement: CenteredCircularProgressIndicator(),
               child: _buildTaskListView()
             ),
@@ -53,28 +53,28 @@ class _ProgressTaskListScreenState extends State<ProgressTaskListScreen> {
     return ListView.builder(
       shrinkWrap: true,
       primary: false,
-      itemCount: progressTaskListModel?.taskList?.length ?? 0,
+      itemCount: completedTaskListModel?.taskList?.length ?? 0,
       itemBuilder: (context,indexx) {
         return TaskItemWidget(
-          taskModel: progressTaskListModel!.taskList![indexx],
-          status: 'Progress',
-          color: Colors.yellow,
+          taskModel: completedTaskListModel!.taskList![indexx],
+          status: 'Completed',
+          color: Colors.green,
         );
       },
     );
   }
 
-  Future<void> _getProgressTask() async{
-    _getProgressTaskListInProgress=true;
+  Future<void> _getCompletedTask() async{
+    _getCompletedTaskListInProgress=true;
     setState(() {});
-    final NetworkResponse response=await NetworkCaller.getRequest(url: Urls.taskListByStatusUrl('Progress'));
+    final NetworkResponse response=await NetworkCaller.getRequest(url: Urls.taskListByStatusUrl('Completed'));
     if(response.isSuccess){
-      progressTaskListModel=TaskListByStatusModel.fromJson(response.responseData!);
+      completedTaskListModel=TaskListByStatusModel.fromJson(response.responseData!);
     }
     else{
       showSnackBarMessage(context, response.errorMessage);
     }
-    _getProgressTaskListInProgress=false;
+    _getCompletedTaskListInProgress=false;
     setState(() {});
     
 
