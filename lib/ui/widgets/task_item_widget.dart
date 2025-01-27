@@ -56,15 +56,23 @@ class _TaskItemWidgetState extends State<TaskItemWidget> {
                 ),
                 Row(
                   children: [
-                    IconButton(
-                      onPressed: () {
-                        _deleteTask(widget.taskModel.sId?? '');
-                      },
-                      icon: Icon(Icons.delete),
+                    Visibility(
+                      visible: _deleteTaskInProgress==false,
+                      replacement: CenteredCircularProgressIndicator(),
+                      child: IconButton(
+                        onPressed: () {
+                          _deleteTask(widget.taskModel.sId?? '');
+                        },
+                        icon: Icon(Icons.delete),
+                      ),
                     ),
-                    IconButton(
-                      onPressed: () => _showUpdateDialog(context),
-                      icon: Icon(Icons.edit),
+                    Visibility(
+                      visible: _updateTaskStatusInProgress==false,
+                      replacement: CenteredCircularProgressIndicator(),
+                      child: IconButton(
+                        onPressed: () => _showUpdateDialog(context),
+                        icon: Icon(Icons.edit),
+                      ),
                     ),
                   ],
                 ),
