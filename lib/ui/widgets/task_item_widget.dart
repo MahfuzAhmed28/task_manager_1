@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:task_manager_1/data/models/task_model.dart';
+import 'package:task_manager_1/ui/controllers/delete_task_controller.dart';
+import 'package:task_manager_1/ui/controllers/update_task_status_controller.dart';
 import 'package:task_manager_1/ui/widgets/centered_circular_progress_indicator.dart';
 import 'package:task_manager_1/ui/widgets/snack_bar_message.dart';
 
-import '../../data/services/network_caller.dart';
-import '../../data/utils/urls.dart';
 
 class TaskItemWidget extends StatefulWidget {
   const TaskItemWidget({
@@ -25,8 +26,9 @@ class _TaskItemWidgetState extends State<TaskItemWidget> {
   final TextEditingController _updateStatusTEController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  bool _updateTaskStatusInProgress = false;
-  bool _deleteTaskInProgress = false;
+  final UpdateTaskStatusController _updateTaskStatusController=Get.find<UpdateTaskStatusController>();
+  final DeleteTaskController _deleteTaskController=Get.find<DeleteTaskController>();
+
 
 
 
@@ -56,23 +58,23 @@ class _TaskItemWidgetState extends State<TaskItemWidget> {
                 ),
                 Row(
                   children: [
-                    Visibility(
-                      visible: _deleteTaskInProgress==false,
-                      replacement: CenteredCircularProgressIndicator(),
-                      child: IconButton(
-                        onPressed: () {
-                          _deleteTask(widget.taskModel.sId?? '');
-                        },
-                        icon: Icon(Icons.delete),
-                      ),
+                    GetBuilder<DeleteTaskController>(
+                      builder: (controller) {
+                        return Visibility(
+                          visible: controller.deleteTaskInProgress==false,
+                          replacement: CenteredCircularProgressIndicator(),
+                          child: IconButton(
+                            onPressed: () {
+                              _deleteTask(widget.taskModel.sId?? '');
+                            },
+                            icon: Icon(Icons.delete),
+                          ),
+                        );
+                      }
                     ),
-                    Visibility(
-                      visible: _updateTaskStatusInProgress==false,
-                      replacement: CenteredCircularProgressIndicator(),
-                      child: IconButton(
-                        onPressed: () => _showUpdateDialog(context),
-                        icon: Icon(Icons.edit),
-                      ),
+                    IconButton(
+                    onPressed: () => _showUpdateDialog(context),
+                    icon: Icon(Icons.edit),
                     ),
                   ],
                 ),
@@ -109,13 +111,17 @@ class _TaskItemWidgetState extends State<TaskItemWidget> {
           actions: [
             Column(
               children: [
-                Visibility(
-                  visible: _updateTaskStatusInProgress==false,
-                  replacement: CenteredCircularProgressIndicator(),
-                  child: ElevatedButton(
-                    onPressed: _onTapUpdateStatusButton,
-                    child: Text('Submit'),
-                  ),
+                GetBuilder<UpdateTaskStatusController>(
+                  builder: (controller) {
+                    return Visibility(
+                      visible: controller.updateTaskStatusInProgress==false,
+                      replacement: CenteredCircularProgressIndicator(),
+                      child: ElevatedButton(
+                        onPressed: _onTapUpdateStatusButton,
+                        child: Text('Submit'),
+                      ),
+                    );
+                  }
                 ),
                 SizedBox(height: 8),
                 ElevatedButton(
@@ -140,35 +146,25 @@ class _TaskItemWidgetState extends State<TaskItemWidget> {
 
 
   Future<void> _getUpdateTaskStatus() async {
-    _updateTaskStatusInProgress = true;
-    setState(() {});
+    bool isSuccess=await _updateTaskStatusController.getUpdateTaskStatus(widget.taskModel.sId ?? '', _updateStatusTEController.text.trim());
 
-    final NetworkResponse response = await NetworkCaller.getRequest(
-      url: Urls.updateTaskListStatusUrl(widget.taskModel.sId ?? '', _updateStatusTEController.text),
-    );
-
-    if (response.isSuccess) {
+    if (isSuccess) {
       Navigator.of(context).pop();
+      Get.back();
       showSnackBarMessage(context, 'Status Updated');
     } else {
-      showSnackBarMessage(context, response.errorMessage);
+      showSnackBarMessage(context, _updateTaskStatusController.errorMessage!);
     }
-    _updateTaskStatusInProgress = false;
-    setState(() {});
   }
 
   Future<void> _deleteTask(String id) async {
-    _deleteTaskInProgress=true;
-    setState(() {});
-    final NetworkResponse response= await NetworkCaller.getRequest(url: Urls.deleteTaskUrl(id));
-    if(response.isSuccess){
+    bool isSuccess=await _deleteTaskController.deleteTask(id);
+    if(isSuccess){
       showSnackBarMessage(context, 'Task deleted');
     }
     else{
-      showSnackBarMessage(context, response.errorMessage);
+      showSnackBarMessage(context, _deleteTaskController.errorMessage!);
     }
-    _deleteTaskInProgress=false;
-    setState(() {});
   }
 
   @override

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:task_manager_1/data/models/task_model.dart';
 import 'package:task_manager_1/data/services/network_caller.dart';
 import 'package:task_manager_1/data/utils/urls.dart';
+import 'package:task_manager_1/ui/controllers/completed_task_controller.dart';
 import 'package:task_manager_1/ui/utils/app_colors.dart';
 import 'package:task_manager_1/ui/widgets/centered_circular_progress_indicator.dart';
 import 'package:task_manager_1/ui/widgets/screen_background.dart';
@@ -23,6 +26,8 @@ class _CompletedTaskListScreenState extends State<CompletedTaskListScreen> {
   bool _getCompletedTaskListInProgress=false;
   TaskListByStatusModel? completedTaskListModel;
 
+  final CompletedTaskController _completedTaskController=Get.find<CompletedTaskController>();
+
   @override
   @override
   void initState() {
@@ -38,10 +43,14 @@ class _CompletedTaskListScreenState extends State<CompletedTaskListScreen> {
         child: SingleChildScrollView(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 8),
-            child: Visibility(
-              visible: _getCompletedTaskListInProgress==false,
-              replacement: CenteredCircularProgressIndicator(),
-              child: _buildTaskListView()
+            child: GetBuilder<CompletedTaskController>(
+              builder: (controller) {
+                return Visibility(
+                  visible: controller.inProgress==false,
+                  replacement: CenteredCircularProgressIndicator(),
+                  child: _buildTaskListView(controller.taskList)
+                );
+              }
             ),
           ),
         ),
@@ -49,14 +58,14 @@ class _CompletedTaskListScreenState extends State<CompletedTaskListScreen> {
     );
   }
 
-  Widget _buildTaskListView() {
+  Widget _buildTaskListView(List<TaskModel> taskList) {
     return ListView.builder(
       shrinkWrap: true,
       primary: false,
-      itemCount: completedTaskListModel?.taskList?.length ?? 0,
-      itemBuilder: (context,indexx) {
+      itemCount: taskList.length,
+      itemBuilder: (context,index) {
         return TaskItemWidget(
-          taskModel: completedTaskListModel!.taskList![indexx],
+          taskModel: taskList[index],
           status: 'Completed',
           color: Colors.green,
         );
@@ -65,17 +74,10 @@ class _CompletedTaskListScreenState extends State<CompletedTaskListScreen> {
   }
 
   Future<void> _getCompletedTask() async{
-    _getCompletedTaskListInProgress=true;
-    setState(() {});
-    final NetworkResponse response=await NetworkCaller.getRequest(url: Urls.taskListByStatusUrl('Completed'));
-    if(response.isSuccess){
-      completedTaskListModel=TaskListByStatusModel.fromJson(response.responseData!);
+    final bool isSuccess= await _completedTaskController.getCompletedTaskList();
+    if(!isSuccess){
+      showSnackBarMessage(context, _completedTaskController.errorMessage!);
     }
-    else{
-      showSnackBarMessage(context, response.errorMessage);
-    }
-    _getCompletedTaskListInProgress=false;
-    setState(() {});
     
 
   }

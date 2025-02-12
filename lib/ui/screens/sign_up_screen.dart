@@ -1,7 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:task_manager_1/data/services/network_caller.dart';
-import 'package:task_manager_1/data/utils/urls.dart';
+import 'package:get/get.dart';
+import 'package:task_manager_1/ui/controllers/sign_up_controller.dart';
 import 'package:task_manager_1/ui/screens/sign_in_screen.dart';
 import 'package:task_manager_1/ui/widgets/centered_circular_progress_indicator.dart';
 import 'package:task_manager_1/ui/widgets/screen_background.dart';
@@ -27,7 +27,8 @@ class _SignUnScreenState extends State<SignUpScreen> {
   final TextEditingController _passwordTEController=TextEditingController();
   final GlobalKey<FormState> _formKey=GlobalKey<FormState>();
 
-  bool _signUpInProgress=false;
+  final SignUpController _signUpController=Get.find<SignUpController>();
+
 
   @override
   Widget build(BuildContext context) {
@@ -120,13 +121,17 @@ class _SignUnScreenState extends State<SignUpScreen> {
                     },
                   ),
                   const SizedBox(height: 28,),
-                  Visibility(
-                    visible: _signUpInProgress==false,
-                    replacement: const CenteredCircularProgressIndicator(),
-                    child: ElevatedButton(
-                      onPressed: _onTapSignUpButton,
-                      child: Icon(Icons.arrow_circle_right_outlined),
-                    ),
+                  GetBuilder<SignUpController>(
+                    builder: (controller) {
+                      return Visibility(
+                        visible: controller.signUpInProgress==false,
+                        replacement: const CenteredCircularProgressIndicator(),
+                        child: ElevatedButton(
+                          onPressed: _onTapSignUpButton,
+                          child: Icon(Icons.arrow_circle_right_outlined),
+                        ),
+                      );
+                    }
                   ),
                   const SizedBox(height: 48,),
                   Center(
@@ -148,27 +153,23 @@ class _SignUnScreenState extends State<SignUpScreen> {
   }
 
   Future<void> _registerUser() async{
-    _signUpInProgress=true;
-    setState(() {});
 
-    Map<String,dynamic> requestBody={
-      "email":_emailTEController.text.trim(),
-      "firstName":_firstNameTEController.text.trim(),
-      "lastName":_lastNameTEController.text.trim(),
-      "mobile":_mobileTEController.text.trim(),
-      "password":_passwordTEController.text,
-      "photo":""
-    };
+    String email=_emailTEController.text.trim();
+    String firstName=_firstNameTEController.text.trim();
+    String lastName=_lastNameTEController.text.trim();
+    String mobile=_mobileTEController.text.trim();
+    String password=_passwordTEController.text;
 
-    final NetworkResponse response=await NetworkCaller.postRequest(url: Urls.registrationUrl,body: requestBody);
-    _signUpInProgress=false;
-    setState(() {});
-    if(response.isSuccess){
+
+    final bool isSuccess=await _signUpController.registerUser(email, firstName, lastName, mobile, password);
+
+
+    if(isSuccess){
       _clearTextFields();
       showSnackBarMessage(context,'New user registration successful');
     }
     else{
-      showSnackBarMessage(context,response.errorMessage);
+      showSnackBarMessage(context,_signUpController.errorMessage!);
     }
   }
   void _clearTextFields(){
@@ -194,7 +195,7 @@ class _SignUnScreenState extends State<SignUpScreen> {
                 ),
               recognizer: TapGestureRecognizer()
                 ..onTap = (){
-                  Navigator.pop(context);
+                  Get.back();
                 }
             )
           ]

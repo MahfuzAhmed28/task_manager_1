@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:task_manager_1/data/services/network_caller.dart';
-import 'package:task_manager_1/data/utils/urls.dart';
+import 'package:get/get.dart';
+import 'package:task_manager_1/data/models/task_model.dart';
+import 'package:task_manager_1/ui/controllers/progress_task_controller.dart';
 import 'package:task_manager_1/ui/utils/app_colors.dart';
 import 'package:task_manager_1/ui/widgets/centered_circular_progress_indicator.dart';
 import 'package:task_manager_1/ui/widgets/screen_background.dart';
@@ -20,10 +21,10 @@ class ProgressTaskListScreen extends StatefulWidget {
 
 class _ProgressTaskListScreenState extends State<ProgressTaskListScreen> {
 
-  bool _getProgressTaskListInProgress=false;
   TaskListByStatusModel? progressTaskListModel;
 
-  @override
+  final ProgressTaskController _progressTaskController=Get.find<ProgressTaskController>();
+
   @override
   void initState() {
     super.initState();
@@ -38,10 +39,14 @@ class _ProgressTaskListScreenState extends State<ProgressTaskListScreen> {
         child: SingleChildScrollView(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 8),
-            child: Visibility(
-              visible: _getProgressTaskListInProgress==false,
-              replacement: CenteredCircularProgressIndicator(),
-              child: _buildTaskListView()
+            child: GetBuilder<ProgressTaskController>(
+              builder: (controller) {
+                return Visibility(
+                  visible: controller.inProgress==false,
+                  replacement: CenteredCircularProgressIndicator(),
+                  child: _buildTaskListView(controller.taskList)
+                );
+              }
             ),
           ),
         ),
@@ -49,14 +54,14 @@ class _ProgressTaskListScreenState extends State<ProgressTaskListScreen> {
     );
   }
 
-  Widget _buildTaskListView() {
+  Widget _buildTaskListView(List<TaskModel> taskList) {
     return ListView.builder(
       shrinkWrap: true,
       primary: false,
-      itemCount: progressTaskListModel?.taskList?.length ?? 0,
+      itemCount: taskList.length,
       itemBuilder: (context,indexx) {
         return TaskItemWidget(
-          taskModel: progressTaskListModel!.taskList![indexx],
+          taskModel: taskList[indexx],
           status: 'Progress',
           color: Colors.yellow,
         );
@@ -65,17 +70,11 @@ class _ProgressTaskListScreenState extends State<ProgressTaskListScreen> {
   }
 
   Future<void> _getProgressTask() async{
-    _getProgressTaskListInProgress=true;
-    setState(() {});
-    final NetworkResponse response=await NetworkCaller.getRequest(url: Urls.taskListByStatusUrl('Progress'));
-    if(response.isSuccess){
-      progressTaskListModel=TaskListByStatusModel.fromJson(response.responseData!);
+    final bool isSuccess=await _progressTaskController.getProgressTaskList();
+    if(!isSuccess){
+
+      showSnackBarMessage(context, _progressTaskController.errorMessage!);
     }
-    else{
-      showSnackBarMessage(context, response.errorMessage);
-    }
-    _getProgressTaskListInProgress=false;
-    setState(() {});
     
 
   }

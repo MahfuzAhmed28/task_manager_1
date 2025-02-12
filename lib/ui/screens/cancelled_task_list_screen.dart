@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:task_manager_1/data/models/task_model.dart';
 import 'package:task_manager_1/data/services/network_caller.dart';
 import 'package:task_manager_1/data/utils/urls.dart';
+import 'package:task_manager_1/ui/controllers/cancelled_task_controller.dart';
 import 'package:task_manager_1/ui/utils/app_colors.dart';
 import 'package:task_manager_1/ui/widgets/centered_circular_progress_indicator.dart';
 import 'package:task_manager_1/ui/widgets/screen_background.dart';
@@ -23,6 +26,8 @@ class _CancelledTaskListScreenState extends State<CancelledTaskListScreen> {
   bool _getCancelledTaskListInProgress=false;
   TaskListByStatusModel? cancelledTaskListModel;
 
+  final CancelledTaskController _cancelledTaskController=Get.find<CancelledTaskController>();
+
   @override
   @override
   void initState() {
@@ -38,10 +43,14 @@ class _CancelledTaskListScreenState extends State<CancelledTaskListScreen> {
         child: SingleChildScrollView(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 8),
-            child: Visibility(
-              visible: _getCancelledTaskListInProgress==false,
-              replacement: CenteredCircularProgressIndicator(),
-              child: _buildTaskListView()
+            child: GetBuilder<CancelledTaskController>(
+              builder: (controller) {
+                return Visibility(
+                  visible: controller.inProgress==false,
+                  replacement: CenteredCircularProgressIndicator(),
+                  child: _buildTaskListView(controller.taskList)
+                );
+              }
             ),
           ),
         ),
@@ -49,14 +58,14 @@ class _CancelledTaskListScreenState extends State<CancelledTaskListScreen> {
     );
   }
 
-  Widget _buildTaskListView() {
+  Widget _buildTaskListView(List<TaskModel> taskList) {
     return ListView.builder(
       shrinkWrap: true,
       primary: false,
-      itemCount: cancelledTaskListModel?.taskList?.length ?? 0,
-      itemBuilder: (context,indexx) {
+      itemCount: taskList.length,
+      itemBuilder: (context,index) {
         return TaskItemWidget(
-          taskModel: cancelledTaskListModel!.taskList![indexx],
+          taskModel: taskList[index],
           status: 'Cancelled',
           color: Colors.red,
         );
@@ -65,19 +74,11 @@ class _CancelledTaskListScreenState extends State<CancelledTaskListScreen> {
   }
 
   Future<void> _getCancelledTask() async{
-    _getCancelledTaskListInProgress=true;
-    setState(() {});
-    final NetworkResponse response=await NetworkCaller.getRequest(url: Urls.taskListByStatusUrl('Cancelled'));
-    if(response.isSuccess){
-      cancelledTaskListModel=TaskListByStatusModel.fromJson(response.responseData!);
-    }
-    else{
-      showSnackBarMessage(context, response.errorMessage);
-    }
-    _getCancelledTaskListInProgress=false;
-    setState(() {});
-    
+    final bool isSuccess=await _cancelledTaskController.getCancelledTaskList();
+    if(!isSuccess){
 
+      showSnackBarMessage(context, _cancelledTaskController.errorMessage!);
+    }
   }
 
 }

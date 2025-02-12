@@ -1,9 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:task_manager_1/data/models/user_model.dart';
-import 'package:task_manager_1/data/services/network_caller.dart';
-import 'package:task_manager_1/data/utils/urls.dart';
-import 'package:task_manager_1/ui/controllers/auth_controller.dart';
+import 'package:get/get.dart';
+import 'package:task_manager_1/ui/controllers/sign_in_controller.dart';
 import 'package:task_manager_1/ui/screens/forgot_password_verify_email_screen.dart';
 import 'package:task_manager_1/ui/screens/main_bottom_nav_screen.dart';
 import 'package:task_manager_1/ui/screens/sign_up_screen.dart';
@@ -28,7 +26,7 @@ class _SignInScreenState extends State<SignInScreen> {
   final TextEditingController _passwordTEController=TextEditingController();
   final GlobalKey<FormState> _formKey=GlobalKey<FormState>();
 
-  bool _signInProgress=false;
+  final SignInController _signInController=Get.find<SignInController>();
 
   @override
   Widget build(BuildContext context) {
@@ -83,13 +81,17 @@ class _SignInScreenState extends State<SignInScreen> {
                     },
                   ),
                   const SizedBox(height: 28,),
-                  Visibility(
-                    visible: _signInProgress==false,
-                    replacement: CenteredCircularProgressIndicator(),
-                    child: ElevatedButton(
-                      onPressed: _onTapSignInButton,
-                      child: Icon(Icons.arrow_circle_right_outlined),
-                    ),
+                  GetBuilder<SignInController>(
+                    builder: (controller) {
+                      return Visibility(
+                        visible: controller.inProgress==false,
+                        replacement: CenteredCircularProgressIndicator(),
+                        child: ElevatedButton(
+                          onPressed: _onTapSignInButton,
+                          child: Icon(Icons.arrow_circle_right_outlined),
+                        ),
+                      );
+                    }
                   ),
                   const SizedBox(height: 48,),
                   Center(
@@ -97,7 +99,7 @@ class _SignInScreenState extends State<SignInScreen> {
                       children: [
                         TextButton(
                           onPressed: () {
-                            Navigator.pushNamed(context, ForgotPasswordVerifyEmailScreen.name);
+                            Get.toNamed(ForgotPasswordVerifyEmailScreen.name);
                           },
                           child: Text('Forgot Password?',style: TextStyle(color: Colors.grey),),
                         ),
@@ -124,31 +126,16 @@ class _SignInScreenState extends State<SignInScreen> {
   }
 
   Future<void> _signIn() async {
-    _signInProgress=true;
-    setState(() {});
-    Map<String,dynamic> requestBody={
-      "email":_emailTEController.text.trim(),
-      "password":_passwordTEController.text,
-    };
-    
-    final NetworkResponse response=await NetworkCaller.postRequest(url: Urls.loginnUrl,body: requestBody);
+    final bool isSuccess=await _signInController.signIn(_emailTEController.text.trim(), _passwordTEController.text);
 
-    if(response.isSuccess){
-      String token=response.responseData!['token'];
-      UserModel userModel=UserModel.fromJson(response.responseData!['data']);
-      await AuthController.saveUserData(token, userModel);
-      Navigator.pushReplacementNamed(context, MainBottomNavScreen.name);
+    if(isSuccess){
+      Get.offNamed(MainBottomNavScreen.name);
+
     }
     else{
-      _signInProgress=false;
-      setState(() {});
-      if(response.statusCode==401)
-      {
-        showSnackBarMessage(context, 'Email or Password is invalid! Try again');
-      }
-      else{
-        showSnackBarMessage(context, response.errorMessage);
-      }
+
+      showSnackBarMessage(context, _signInController.errorMessage!);
+
 
     }
   }
@@ -169,7 +156,7 @@ class _SignInScreenState extends State<SignInScreen> {
                 ),
               recognizer: TapGestureRecognizer()
                 ..onTap = (){
-                  Navigator.pushNamed(context, SignUpScreen.name);
+                  Get.toNamed(SignUpScreen.name);
                 }
             )
           ]

@@ -1,7 +1,9 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:task_manager_1/data/services/network_caller.dart';
 import 'package:task_manager_1/data/utils/urls.dart';
+import 'package:task_manager_1/ui/controllers/forgot_password_verify_email_screen_controller.dart';
 import 'package:task_manager_1/ui/screens/sign_in_screen.dart';
 import 'package:task_manager_1/ui/screens/sign_up_screen.dart';
 import 'package:task_manager_1/ui/widgets/centered_circular_progress_indicator.dart';
@@ -24,6 +26,8 @@ class _ForgotPasswordVerifyEmailScreen extends State<ForgotPasswordVerifyEmailSc
 
   final TextEditingController _emailTEController=TextEditingController();
   final GlobalKey<FormState> _formKey=GlobalKey<FormState>();
+
+  final ForgotPasswordVerifyEmailScreenController _forgotPasswordVerifyEmailScreenController=Get.find<ForgotPasswordVerifyEmailScreenController>();
 
   bool _verifyEmailInProgress=false;
 
@@ -65,13 +69,17 @@ class _ForgotPasswordVerifyEmailScreen extends State<ForgotPasswordVerifyEmailSc
                     },
                   ),
                   const SizedBox(height: 28,),
-                  Visibility(
-                    visible: _verifyEmailInProgress==false,
-                    replacement: CenteredCircularProgressIndicator(),
-                    child: ElevatedButton(
-                      onPressed: _onTapVerifyEmailButton,
-                      child: Icon(Icons.arrow_circle_right_outlined),
-                    ),
+                  GetBuilder<ForgotPasswordVerifyEmailScreenController>(
+                    builder: (controller) {
+                      return Visibility(
+                        visible: controller.verifyEmailInProgress==false,
+                        replacement: CenteredCircularProgressIndicator(),
+                        child: ElevatedButton(
+                          onPressed: _onTapVerifyEmailButton,
+                          child: Icon(Icons.arrow_circle_right_outlined),
+                        ),
+                      );
+                    }
                   ),
                   const SizedBox(height: 48,),
                   Center(
@@ -116,19 +124,16 @@ class _ForgotPasswordVerifyEmailScreen extends State<ForgotPasswordVerifyEmailSc
   }
 
   Future<void> _getRessetPasswordVerifyEmail() async{
-    _verifyEmailInProgress=true;
-    setState(() {});
 
-    final NetworkResponse response=await NetworkCaller.getRequest(url: Urls.verifyEmailUrl(_emailTEController.text.trim()));
     String mail=_emailTEController.text.trim();
-    if(response.isSuccess){
-      Navigator.pushNamed(context, ForgotPasswordVerifyOtpScreen.name,arguments: mail.toString());
+    bool isSuccess=await _forgotPasswordVerifyEmailScreenController.getRessetPasswordVerifyEmail(mail);
+    if(isSuccess){
+      //Navigator.pushNamed(context, ForgotPasswordVerifyOtpScreen.name,arguments: mail.toString());
+      Get.toNamed(ForgotPasswordVerifyOtpScreen.name,arguments: mail.toString());
     }
     else{
-      showSnackBarMessage(context, response.errorMessage);
+      showSnackBarMessage(context, _forgotPasswordVerifyEmailScreenController.errorMessage!);
     }
-    _verifyEmailInProgress=false;
-    setState(() {});
   }
 
   @override
