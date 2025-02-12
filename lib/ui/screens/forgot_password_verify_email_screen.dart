@@ -1,11 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:task_manager_1/data/services/network_caller.dart';
-import 'package:task_manager_1/data/utils/urls.dart';
 import 'package:task_manager_1/ui/controllers/forgot_password_verify_email_screen_controller.dart';
-import 'package:task_manager_1/ui/screens/sign_in_screen.dart';
-import 'package:task_manager_1/ui/screens/sign_up_screen.dart';
 import 'package:task_manager_1/ui/widgets/centered_circular_progress_indicator.dart';
 import 'package:task_manager_1/ui/widgets/screen_background.dart';
 import 'package:task_manager_1/ui/widgets/snack_bar_message.dart';
@@ -29,7 +25,6 @@ class _ForgotPasswordVerifyEmailScreen extends State<ForgotPasswordVerifyEmailSc
 
   final ForgotPasswordVerifyEmailScreenController _forgotPasswordVerifyEmailScreenController=Get.find<ForgotPasswordVerifyEmailScreenController>();
 
-  bool _verifyEmailInProgress=false;
 
   @override
   Widget build(BuildContext context) {
@@ -128,7 +123,6 @@ class _ForgotPasswordVerifyEmailScreen extends State<ForgotPasswordVerifyEmailSc
     String mail=_emailTEController.text.trim();
     bool isSuccess=await _forgotPasswordVerifyEmailScreenController.getRessetPasswordVerifyEmail(mail);
     if(isSuccess){
-      //Navigator.pushNamed(context, ForgotPasswordVerifyOtpScreen.name,arguments: mail.toString());
       Get.toNamed(ForgotPasswordVerifyOtpScreen.name,arguments: mail.toString());
     }
     else{

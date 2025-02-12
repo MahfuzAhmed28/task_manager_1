@@ -2,7 +2,6 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
-import 'package:task_manager_1/data/services/network_caller.dart';
 import 'package:task_manager_1/ui/controllers/forgot_password_verify_otp_screen_controller.dart';
 import 'package:task_manager_1/ui/screens/resset_password_screen.dart';
 import 'package:task_manager_1/ui/screens/sign_in_screen.dart';
@@ -11,7 +10,6 @@ import 'package:task_manager_1/ui/widgets/centered_circular_progress_indicator.d
 import 'package:task_manager_1/ui/widgets/screen_background.dart';
 import 'package:task_manager_1/ui/widgets/snack_bar_message.dart';
 
-import '../../data/utils/urls.dart';
 import '../utils/app_colors.dart';
 
 class ForgotPasswordVerifyOtpScreen extends StatefulWidget {
@@ -30,13 +28,6 @@ class _ForgotPasswordVerifyOtpScreen extends State<ForgotPasswordVerifyOtpScreen
   final GlobalKey<FormState> _formKey=GlobalKey<FormState>();
 
   final ForgotPasswordVerifyOTPScreenController _forgotPasswordVerifyOTPScreenController=Get.find<ForgotPasswordVerifyOTPScreenController>();
-
-
-
-  bool _verifyOTPInProgress=false;
-
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -154,7 +145,6 @@ class _ForgotPasswordVerifyOtpScreen extends State<ForgotPasswordVerifyOtpScreen
     String _otp=_otpTEController.text.trim();
     bool isSuccess=await _forgotPasswordVerifyOTPScreenController.ressetPasswordVerifyOTP(_mail, _otp);
     if(isSuccess){
-      //Navigator.pushNamed(context, RessetPasswordScreen.name,arguments: {'mail':widget.mail,'otp':_otpTEController.text.trim()});
       Get.toNamed(RessetPasswordScreen.name,arguments: {'mail':_mail,'otp':_otp});
     }
     else{

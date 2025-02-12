@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:task_manager_1/data/services/network_caller.dart';
-import 'package:task_manager_1/data/utils/urls.dart';
 import 'package:task_manager_1/ui/controllers/add_new_task_screen_controller.dart';
 import 'package:task_manager_1/ui/widgets/centered_circular_progress_indicator.dart';
 import 'package:task_manager_1/ui/widgets/screen_background.dart';
@@ -25,7 +23,6 @@ class _AddNewTaskScreenState extends State<AddNewTaskScreen> {
 
   final AddNewTaskScreenController _addNewTaskScreenController=Get.find<AddNewTaskScreenController>();
 
-  bool _addNewTaskInPorgress=false;
 
   @override
   Widget build(BuildContext context) {

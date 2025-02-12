@@ -2,6 +2,9 @@
 import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
+import 'package:get/get_common/get_reset.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_navigation/get_navigation.dart';
 import 'package:http/http.dart';
 import 'package:task_manager_1/ui/controllers/auth_controller.dart';
 import 'package:task_manager_1/ui/screens/sign_in_screen.dart';
@@ -79,6 +82,6 @@ class NetworkCaller{
 
   static Future<void> _logout() async{
     await AuthController.clearUserData();
-    Navigator.pushNamedAndRemoveUntil(TaskManageApp.navigatorKey.currentContext!, SignInScreen.name,(_)=>false );
+    Get.offAllNamed(SignInScreen.name);
   }
 }
